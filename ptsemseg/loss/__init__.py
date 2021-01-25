@@ -5,6 +5,8 @@ from ptsemseg.loss.loss import (
     cross_entropy2d,
     bootstrapped_cross_entropy2d,
     multi_scale_cross_entropy2d,
+    dice_loss,
+    binary_cross_entropy
 )
 
 
@@ -14,6 +16,8 @@ key2loss = {
     "cross_entropy": cross_entropy2d,
     "bootstrapped_cross_entropy": bootstrapped_cross_entropy2d,
     "multi_scale_cross_entropy": multi_scale_cross_entropy2d,
+    "dice_loss": dice_loss,
+    "binary_cross_entropy": binary_cross_entropy
 }
 
 

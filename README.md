@@ -90,7 +90,7 @@ training:
     val_interval: 500
     print_interval: 25
     loss:
-        name: <loss_type> [options: 'cross_entropy, bootstrapped_cross_entropy, multi_scale_crossentropy']
+        name: <loss_type> [options: 'cross_entropy, bootstrapped_cross_entropy, multi_scale_crossentropy, dice_loss, binary_cross_entropy']
         <loss_keyarg1>:<value>
 
     # Optmizer Configuration

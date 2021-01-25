@@ -1,0 +1,26 @@
+model:
+    arch: unet
+data:
+    dataset: em
+    train_split: train
+    val_split: val
+    img_rows: 512
+    img_cols: 512
+    path: /Users/ultrashieldrog/Datasets/EM_Challenge/ 
+training:
+    train_iters: 100
+    batch_size: 4
+    val_interval: 10
+    n_workers: 8
+    print_interval: 10
+    optimizer:
+        name: 'sgd'
+        lr: 1.0e-10
+        weight_decay: 0.0005
+        momentum: 0.99
+    loss:
+        name: 'cross_entropy'
+    l_rate: 0.0001
+    lr_schedule:
+    visdom: False
+    resume:

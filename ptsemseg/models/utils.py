@@ -173,14 +173,14 @@ class unetConv2(nn.Module):
 
         if is_batchnorm:
             self.conv1 = nn.Sequential(
-                nn.Conv2d(in_size, out_size, 3, 1, 0), nn.BatchNorm2d(out_size), nn.ReLU()
+                nn.Conv2d(in_size, out_size, 3, 1, 1), nn.BatchNorm2d(out_size), nn.ReLU()
             )
             self.conv2 = nn.Sequential(
-                nn.Conv2d(out_size, out_size, 3, 1, 0), nn.BatchNorm2d(out_size), nn.ReLU()
+                nn.Conv2d(out_size, out_size, 3, 1, 1), nn.BatchNorm2d(out_size), nn.ReLU()
             )
         else:
-            self.conv1 = nn.Sequential(nn.Conv2d(in_size, out_size, 3, 1, 0), nn.ReLU())
-            self.conv2 = nn.Sequential(nn.Conv2d(out_size, out_size, 3, 1, 0), nn.ReLU())
+            self.conv1 = nn.Sequential(nn.Conv2d(in_size, out_size, 3, 1, 1), nn.ReLU())
+            self.conv2 = nn.Sequential(nn.Conv2d(out_size, out_size, 3, 1, 1), nn.ReLU())
 
     def forward(self, inputs):
         outputs = self.conv1(inputs)
@@ -203,6 +203,14 @@ class unetUp(nn.Module):
         padding = 2 * [offset // 2, offset // 2]
         outputs1 = F.pad(inputs1, padding)
         return self.conv(torch.cat([outputs1, outputs2], 1))
+        # outputs2 = self.up(inputs2)
+        # offsetY = outputs2.size()[2] - inputs1.size()[2]
+        # offsetX = outputs2.size()[3] - inputs1.size()[3]
+        # # padding = 2 * [offset // 2, offset // 2]
+        # # outputs1 = F.pad(inputs1, padding)
+        # outputs1 = nn.functional.pad(inputs1, (offsetX // 2, offsetX - offsetX//2,
+        #                             offsetY // 2, offsetY - offsetY//2))
+        # return self.conv(torch.cat([outputs1, outputs2], dim=1))
 
 
 class segnetDown2(nn.Module):

@@ -1,22 +1,51 @@
 import torch
 import torch.nn.functional as F
+from torch.nn import BCELoss
 
 
 def cross_entropy2d(input, target, weight=None, size_average=True):
     n, c, h, w = input.size()
     nt, ht, wt = target.size()
+    # print(n, c, h, w)
+    # print(n)
+    # print("cross_entropy2d_loss: input_size ", input.size(), "target_size ", target.size())
 
     # Handle inconsistent size between input and target
-    if h != ht and w != wt:  # upsample labels
-        input = F.interpolate(input, size=(ht, wt), mode="bilinear", align_corners=True)
+    # if h != ht and w != wt:  # upsample labels
+    #     input = F.interpolate(input, size=(ht, wt), mode="bilinear", align_corners=True)
 
     input = input.transpose(1, 2).transpose(2, 3).contiguous().view(-1, c)
     target = target.view(-1)
+    # print(input.size())
+    # print(target.size())
+    # input = input[0]
+
+    # print("cross_entropy2d_loss: after-resize: input_size ", input.size(), "target_size ", target.size())
+    weight = torch.Tensor([0.001]*2)
     loss = F.cross_entropy(
         input, target, weight=weight, size_average=size_average, ignore_index=250
     )
     return loss
 
+def binary_cross_entropy(input, target):
+    loss = BCELoss()
+    return loss(input, target)
+
+def	dice_loss(input, target):
+    N = target.size(0)
+    smooth = 1
+
+    input_flat = input.view(N, -1)
+    target_flat = target.view(N, -1)
+
+    intersection = input_flat * target_flat
+
+    loss = 2 * (intersection.sum(1) + smooth) / (input_flat.sum(1) + target_flat.sum(1) + smooth)
+    loss = 1 - loss.sum() / N
+
+    return loss
+
+# TODO: implement binarycrossentropy, implemen diceloss
 
 def multi_scale_cross_entropy2d(input, target, weight=None, size_average=True, scale_weight=None):
     if not isinstance(input, tuple):

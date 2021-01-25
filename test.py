@@ -3,6 +3,7 @@ import torch
 import argparse
 import numpy as np
 import scipy.misc as misc
+import imageio
 
 
 from ptsemseg.models import get_model
@@ -27,7 +28,7 @@ def test(args):
 
     # Setup image
     print("Read Input Image from : {}".format(args.img_path))
-    img = misc.imread(args.img_path)
+    img = imageio.imread(args.img_path)
 
     data_loader = get_loader(args.dataset)
     loader = data_loader(root=None, is_transform=True, img_norm=args.img_norm, test_mode=True)

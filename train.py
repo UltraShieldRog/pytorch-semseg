@@ -21,6 +21,7 @@ from ptsemseg.optimizers import get_optimizer
 
 from tensorboardX import SummaryWriter
 
+import torch.nn.functional as F
 
 def train(cfg, writer, logger):
 
@@ -110,7 +111,7 @@ def train(cfg, writer, logger):
     val_loss_meter = averageMeter()
     time_meter = averageMeter()
 
-    best_iou = -100.0
+    best_dice = -100.0
     i = start_iter
     flag = True
 
@@ -126,7 +127,19 @@ def train(cfg, writer, logger):
             optimizer.zero_grad()
             outputs = model(images)
 
+            # print(images.size())
+            # print(labels.size())
+            # print(outputs.size())
+            # print("input unique", images.unique())
+            # print("output unique", outputs.unique())
+            # print("label unique", labels.unique())
+            # for ii in range(len(outputs)):
+            #     print(labels[0][0][ii], outputs[0][0][ii])
+
+            # check uniques of predicts and labels
             loss = loss_fn(input=outputs, target=labels)
+            # print(loss)
+            # print((outputs > 0.5).float().unique())
 
             loss.backward()
             optimizer.step()
@@ -159,6 +172,12 @@ def train(cfg, writer, logger):
                         outputs = model(images_val)
                         val_loss = loss_fn(input=outputs, target=labels_val)
 
+                        # n, c, h, w = outputs.size()
+                        # nt, ht, wt = labels_val.size()
+                        # # Handle inconsistent size between input and target
+                        # if h != ht and w != wt:  # upsample labels
+                        #     outputs = F.interpolate(outputs, size=(ht, wt), mode="bilinear", align_corners=True)
+                        
                         pred = outputs.data.max(1)[1].cpu().numpy()
                         gt = labels_val.data.cpu().numpy()
 
@@ -168,27 +187,27 @@ def train(cfg, writer, logger):
                 writer.add_scalar("loss/val_loss", val_loss_meter.avg, i + 1)
                 logger.info("Iter %d Loss: %.4f" % (i + 1, val_loss_meter.avg))
 
-                score, class_iou = running_metrics_val.get_scores()
+                score, class_dice = running_metrics_val.get_scores()
                 for k, v in score.items():
                     print(k, v)
                     logger.info("{}: {}".format(k, v))
                     writer.add_scalar("val_metrics/{}".format(k), v, i + 1)
 
-                for k, v in class_iou.items():
+                for k, v in class_dice.items():
                     logger.info("{}: {}".format(k, v))
                     writer.add_scalar("val_metrics/cls_{}".format(k), v, i + 1)
 
                 val_loss_meter.reset()
                 running_metrics_val.reset()
 
-                if score["Mean IoU : \t"] >= best_iou:
-                    best_iou = score["Mean IoU : \t"]
+                if score["Mean Dice : \t"] >= best_dice:
+                    best_dice = score["Mean Dice : \t"]
                     state = {
                         "epoch": i + 1,
                         "model_state": model.state_dict(),
                         "optimizer_state": optimizer.state_dict(),
                         "scheduler_state": scheduler.state_dict(),
-                        "best_iou": best_iou,
+                        "best_dice": best_dice,
                     }
                     save_path = os.path.join(
                         writer.file_writer.get_logdir(),
@@ -207,7 +226,7 @@ if __name__ == "__main__":
         "--config",
         nargs="?",
         type=str,
-        default="configs/fcn8s_pascal.yml",
+        default="configs/unet_test.yml",
         help="Configuration file to use",
     )
 
